@@ -18,10 +18,14 @@ import java.lang.Math;
 public class MainActivity extends Activity implements View.OnTouchListener {
 
     private ViewFlipper viewFlipper;
-    private Button IPconfirm;
-    private ImageView base, stick;
+    private Button IPconfirm, bgNextButton;
+    private ImageView base, stick, background;
     private SurfaceView surfaceView;
     private SurfaceHolder surfaceHolder;
+
+    private int bgRotate[]={R.drawable.bg0, R.drawable.bg1, R.drawable.bg2, R.drawable.bg3, R.drawable.bg4, R.drawable.bg5, R.drawable.bg6, R.drawable.bg7, R.drawable.bg8, R.drawable.bg9};
+    private int bgChoose=0;
+    private int bgNumber=10;
 
     // 左右滑动时手指按下的X坐标
     private float touchDownX;
@@ -29,7 +33,7 @@ public class MainActivity extends Activity implements View.OnTouchListener {
     private float touchUpX;
 
     private View.OnTouchListener stickMotion;
-    private View.OnClickListener ipconfirmClick;
+    private View.OnClickListener ipconfirmClick, bgNextClick;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -43,6 +47,9 @@ public class MainActivity extends Activity implements View.OnTouchListener {
         IPconfirm = (Button) findViewById(R.id.IPconfirm);
         base = (ImageView) findViewById(R.id.base);
         stick = (ImageView) findViewById(R.id.stick);
+        background = (ImageView) findViewById(R.id.background);
+        bgNextButton = (Button) findViewById(R.id.bgNextButton);
+
 
         stickMotion = new View.OnTouchListener() {
             private double rawX, rawY;
@@ -112,13 +119,25 @@ public class MainActivity extends Activity implements View.OnTouchListener {
         ipconfirmClick = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(background.getVisibility()==View.INVISIBLE){
+                    background.setVisibility(View.VISIBLE);
+                }
+                else{background.setVisibility(View.INVISIBLE);}
+            }
+        };
 
+        bgNextClick = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                bgChoose=(bgChoose+1)%bgNumber;
+                background.setImageResource(bgRotate[bgChoose]);
             }
         };
 
         viewFlipper.setOnTouchListener(this);
         IPconfirm.setOnClickListener(ipconfirmClick);
         stick.setOnTouchListener(stickMotion);
+        bgNextButton.setOnClickListener(bgNextClick);
     }
 
     @Override
