@@ -1,17 +1,14 @@
 package edu.sjtu.chao.smartcart;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.ViewFlipper;
 
 public class MainActivity extends Activity implements View.OnTouchListener {
@@ -42,22 +39,34 @@ public class MainActivity extends Activity implements View.OnTouchListener {
         stickMotion = new View.OnTouchListener() {
             private int X,Y;
             private int centerX, centerY;
+            private int width,height;
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                X= ((int) event.getX());
-                Y= ((int) event.getY());
+                X= ((int) event.getRawX());
+                Y= ((int) event.getRawY());
                 centerX=(base.getLeft()+base.getRight())>>1;
                 centerY=(base.getTop()+base.getBottom())>>1;
+                width=stick.getWidth();
+                height=stick.getHeight();
                 switch (event.getAction()){
                     case MotionEvent.ACTION_DOWN:
-                        stick.setLeft(50);
-                        stick.setRight(stick.getLeft()+stick.getWidth());
+                        stick.setLeft(X-(width>>1));
+                        stick.setRight(stick.getLeft()+width);
+                        stick.setTop(Y - (height>>1));
+                        stick.setBottom(stick.getTop()+height);
                         return true;
                     case MotionEvent.ACTION_MOVE:
+                        stick.setLeft(X-(width>>1));
+                        stick.setRight(stick.getLeft()+width);
+                        stick.setTop(Y - (height>>1));
+                        stick.setBottom(stick.getTop()+height);
                         return true;
                     case MotionEvent.ACTION_UP:
+                        stick.setLeft(centerX-(width>>1));
+                        stick.setRight(stick.getLeft()+width);
+                        stick.setTop(centerY-(height>>1));
+                        stick.setBottom(stick.getTop()+height);
                         return true;
-
                 }
                 return false;
             }

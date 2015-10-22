@@ -18,9 +18,9 @@
         android:layout_height="80dp"
         android:id="@+id/stick"
         android:src="@drawable/floating_stick"
+        android:alpha="0.3"
         android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:alpha="0.3"/>
+        android:layout_centerHorizontal="true" />
 
 
 </RelativeLayout>

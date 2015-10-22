@@ -7,6 +7,7 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:id="@+id/surfaceView" />
+
     <ViewFlipper
         android:id="@+id/viewFlipper"
         android:layout_width="fill_parent"
