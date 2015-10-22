@@ -6,7 +6,7 @@
     </style>
 
     <style name="FullScreen" parent="android:Theme.Holo.NoActionBar.Fullscreen">
-
+        <item name="android:background">#336699</item>
     </style>
 
 </resources>

@@ -4,13 +4,14 @@
     android:layout_height="match_parent">
 
     <ImageView
-        android:layout_width="260dp"
-        android:layout_height="260dp"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
         android:id="@+id/base"
         android:src="@drawable/analog_base"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
         android:alpha="0.1"/>
+
 
     <ImageView
         android:layout_width="80dp"
@@ -19,5 +20,7 @@
         android:src="@drawable/floating_stick"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
-        android:alpha="0.2"/>
+        android:alpha="0.3"/>
+
+
 </RelativeLayout>

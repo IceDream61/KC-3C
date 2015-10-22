@@ -1,30 +1,78 @@
 package edu.sjtu.chao.smartcart;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.ViewFlipper;
 
 public class MainActivity extends Activity implements View.OnTouchListener {
 
     private ViewFlipper viewFlipper;
+    public Button IPconfirm;
+    public ImageView base, stick;
 
     // 左右滑动时手指按下的X坐标
     private float touchDownX;
     // 左右滑动时手指松开的X坐标
     private float touchUpX;
 
+    private View.OnTouchListener stickMotion;
+    private View.OnClickListener ipconfirmClick;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         viewFlipper = (ViewFlipper) findViewById(R.id.viewFlipper);
+        IPconfirm = (Button) findViewById(R.id.IPconfirm);
+        base = (ImageView) findViewById(R.id.base);
+        stick = (ImageView) findViewById(R.id.stick);
+
+        stickMotion = new View.OnTouchListener() {
+            private int X,Y;
+            private int centerX, centerY;
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                X= ((int) event.getX());
+                Y= ((int) event.getY());
+                centerX=(base.getLeft()+base.getRight())>>1;
+                centerY=(base.getTop()+base.getBottom())>>1;
+                switch (event.getAction()){
+                    case MotionEvent.ACTION_DOWN:
+                        stick.setLeft(50);
+                        stick.setRight(stick.getLeft()+stick.getWidth());
+                        return true;
+                    case MotionEvent.ACTION_MOVE:
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        return true;
+
+                }
+                return false;
+            }
+        };
+
+        ipconfirmClick = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        };
+
         viewFlipper.setOnTouchListener(this);
+        IPconfirm.setOnClickListener(ipconfirmClick);
+        stick.setOnTouchListener(stickMotion);
     }
 
     @Override
