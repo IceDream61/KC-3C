@@ -1,21 +1,27 @@
 package edu.sjtu.chao.smartcart;
 
 import android.app.Activity;
+import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ViewFlipper;
+import java.lang.Math;
 
 public class MainActivity extends Activity implements View.OnTouchListener {
 
     private ViewFlipper viewFlipper;
-    public Button IPconfirm;
-    public ImageView base, stick;
+    private Button IPconfirm;
+    private ImageView base, stick;
+    private SurfaceView surfaceView;
+    private SurfaceHolder surfaceHolder;
 
     // 左右滑动时手指按下的X坐标
     private float touchDownX;
@@ -30,22 +36,30 @@ public class MainActivity extends Activity implements View.OnTouchListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+        surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
+        surfaceHolder = surfaceView.getHolder();
+        surfaceHolder.setFormat(PixelFormat.TRANSPARENT);
         viewFlipper = (ViewFlipper) findViewById(R.id.viewFlipper);
         IPconfirm = (Button) findViewById(R.id.IPconfirm);
         base = (ImageView) findViewById(R.id.base);
         stick = (ImageView) findViewById(R.id.stick);
 
         stickMotion = new View.OnTouchListener() {
+            private double rawX, rawY;
             private int X,Y;
             private int centerX, centerY;
             private int width,height;
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                X= ((int) event.getRawX());
-                Y= ((int) event.getRawY());
                 centerX=(base.getLeft()+base.getRight())>>1;
                 centerY=(base.getTop()+base.getBottom())>>1;
+                rawX=event.getRawX();
+                rawY=event.getRawY();
+                rawX=Xtrans(rawX-((double)centerX), rawY-((double)centerY), 240.0)+((double)centerX);
+                rawY=Ytrans(rawX-((double)centerX), rawY-((double)centerY), 240.0)+((double)centerY);
+                X= ((int) rawX);
+                Y= ((int) rawY);
+
                 width=stick.getWidth();
                 height=stick.getHeight();
                 switch (event.getAction()){
@@ -69,6 +83,29 @@ public class MainActivity extends Activity implements View.OnTouchListener {
                         return true;
                 }
                 return false;
+            }
+
+            private double Xtrans(double x, double y, double R){
+                double tmp;
+                if((tmp=(x*x+y*y))<=R*R){
+                    return x;
+                }
+                else{
+                    tmp=Math.sqrt(tmp);
+                    x=x*R/tmp;
+                    return x;
+                }
+            }
+            private double Ytrans(double x, double y, double R){
+                double tmp;
+                if((tmp=(x*x+y*y))<=R*R){
+                    return y;
+                }
+                else{
+                    tmp=Math.sqrt(tmp);
+                    y=y*R/tmp;
+                    return y;
+                }
             }
         };
 
