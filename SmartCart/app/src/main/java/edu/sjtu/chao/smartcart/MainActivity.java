@@ -13,17 +13,18 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ViewFlipper;
-import java.lang.Math;
 
 public class MainActivity extends Activity implements View.OnTouchListener {
 
     private ViewFlipper viewFlipper;
     private Button IPconfirm, bgNextButton;
-    private ImageView base, stick, background;
+    private ImageView base, stick, background, directionKey;
     private SurfaceView surfaceView;
     private SurfaceHolder surfaceHolder;
+    private RouteView routePad;
 
-    private int bgRotate[]={R.drawable.bg0, R.drawable.bg1, R.drawable.bg2, R.drawable.bg3, R.drawable.bg4, R.drawable.bg5, R.drawable.bg6, R.drawable.bg7, R.drawable.bg8, R.drawable.bg9};
+    private int bgRotate[]={R.drawable.bg0, R.drawable.bg1, R.drawable.bg2, R.drawable.bg3, R.drawable.bg4,
+            R.drawable.bg5, R.drawable.bg6, R.drawable.bg7, R.drawable.bg8, R.drawable.bg9};
     private int bgChoose=0;
     private int bgNumber=10;
 
@@ -32,7 +33,7 @@ public class MainActivity extends Activity implements View.OnTouchListener {
     // 左右滑动时手指松开的X坐标
     private float touchUpX;
 
-    private View.OnTouchListener stickMotion;
+    private View.OnTouchListener stickMotion, keyTouch;
     private View.OnClickListener ipconfirmClick, bgNextClick;
 
     @Override
@@ -43,13 +44,36 @@ public class MainActivity extends Activity implements View.OnTouchListener {
         surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
         surfaceHolder = surfaceView.getHolder();
         surfaceHolder.setFormat(PixelFormat.TRANSPARENT);
+
         viewFlipper = (ViewFlipper) findViewById(R.id.viewFlipper);
         IPconfirm = (Button) findViewById(R.id.IPconfirm);
         base = (ImageView) findViewById(R.id.base);
         stick = (ImageView) findViewById(R.id.stick);
+        directionKey = (ImageView) findViewById(R.id.directionKey);
+
         background = (ImageView) findViewById(R.id.background);
         bgNextButton = (Button) findViewById(R.id.bgNextButton);
 
+        routePad = (RouteView) findViewById(R.id.routePad);
+        routePad.setZOrderOnTop(true);
+
+        ipconfirmClick = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(background.getVisibility()==View.INVISIBLE){
+                    background.setVisibility(View.VISIBLE);
+                }
+                else{background.setVisibility(View.INVISIBLE);}
+            }
+        };
+
+        bgNextClick = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                bgChoose=(bgChoose+1)%bgNumber;
+                background.setImageResource(bgRotate[bgChoose]);
+            }
+        };
 
         stickMotion = new View.OnTouchListener() {
             private double rawX, rawY;
@@ -116,21 +140,48 @@ public class MainActivity extends Activity implements View.OnTouchListener {
             }
         };
 
-        ipconfirmClick = new View.OnClickListener() {
+        keyTouch = new View.OnTouchListener() {
+            private int X,Y,centerX,centerY;
+            private int valueLow=40, valueHigh=100;
             @Override
-            public void onClick(View v) {
-                if(background.getVisibility()==View.INVISIBLE){
-                    background.setVisibility(View.VISIBLE);
+            public boolean onTouch(View v, MotionEvent event) {
+                centerX=(directionKey.getLeft()+directionKey.getRight())>>1;
+                centerY=(directionKey.getTop()+directionKey.getBottom())>>1;
+                X=((int)event.getRawX())-centerX;
+                Y=((int)event.getRawY())-centerY;
+                switch(event.getAction()){
+                    case MotionEvent.ACTION_DOWN:
+                        changeKeyPic(X,Y);
+                        return true;
+                    case MotionEvent.ACTION_MOVE:
+                        changeKeyPic(X,Y);
+                        return true;
+                    case MotionEvent.ACTION_OUTSIDE:
+                        directionKey.setImageResource(R.drawable.key0);
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        directionKey.setImageResource(R.drawable.key0);
                 }
-                else{background.setVisibility(View.INVISIBLE);}
+                return false;
             }
-        };
 
-        bgNextClick = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                bgChoose=(bgChoose+1)%bgNumber;
-                background.setImageResource(bgRotate[bgChoose]);
+            public void changeKeyPic(int x, int y){
+                if(y>-valueLow && y<valueLow){
+                    if(x>valueHigh){
+                        directionKey.setImageResource(R.drawable.key_right);
+                    }
+                    if(x<-valueHigh){
+                        directionKey.setImageResource(R.drawable.key_left);
+                    }
+                }
+                if(x>-valueLow && x<valueLow){
+                    if(y>valueHigh){
+                        directionKey.setImageResource(R.drawable.key_down);
+                    }
+                    if(y<-valueHigh){
+                        directionKey.setImageResource(R.drawable.key_up);
+                    }
+                }
             }
         };
 
@@ -138,6 +189,7 @@ public class MainActivity extends Activity implements View.OnTouchListener {
         IPconfirm.setOnClickListener(ipconfirmClick);
         stick.setOnTouchListener(stickMotion);
         bgNextButton.setOnClickListener(bgNextClick);
+        directionKey.setOnTouchListener(keyTouch);
     }
 
     @Override

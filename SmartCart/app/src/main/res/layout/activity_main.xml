@@ -25,8 +25,14 @@
             android:id="@+id/ip_connect"
             layout="@layout/ip_connect" />
         <include
+            android:id="@+id/direction_key"
+            layout="@layout/direction_key"/>
+        <include
             android:id="@+id/direction_stick"
             layout="@layout/direction_stick" />
+        <include
+            android:id="@+id/route_pad"
+            layout="@layout/route_pad"/>
         <include
             android:id="@+id/layout01"
             layout="@layout/layout01" />
