@@ -45,11 +45,11 @@ class RouteView extends SurfaceView implements SurfaceHolder.Callback, Runnable 
         this.setFocusable(true);
         this.setFocusableInTouchMode(true);
         routeHolder = this.getHolder();
-        routeHolder.setFormat(PixelFormat.TRANSLUCENT);//设置RouteView背景为透明
+        routeHolder.setFormat(PixelFormat.TRANSLUCENT);
         routeHolder.addCallback(this);
         routePath = new Path();
         routePaint = new Paint();
-        routePaint.setColor(Color.BLUE);
+        routePaint.setColor(getResources().getColor(R.color.blue));
         routePaint.setAntiAlias(true);
         routePaint.setStyle(Paint.Style.STROKE);
         routePaint.setStrokeWidth(6);
@@ -101,6 +101,10 @@ class RouteView extends SurfaceView implements SurfaceHolder.Callback, Runnable 
     public boolean onTouchEvent(MotionEvent event) {
         X=event.getX();
         Y=event.getY();
+        if(outBound((int)X, (int)Y)){
+            sendPath();
+            return true;
+        }
 
         switch(event.getAction()){
             case MotionEvent.ACTION_DOWN:
@@ -110,14 +114,23 @@ class RouteView extends SurfaceView implements SurfaceHolder.Callback, Runnable 
                 routePath.quadTo(lastX,lastY,X,Y);
                 break;
             case MotionEvent.ACTION_UP:
-                routePath.reset();
+                sendPath();
                 break;
             case MotionEvent.ACTION_OUTSIDE:
-                routePath.reset();
+                sendPath();
                 break;
         }
         lastX=X;lastY=Y;
         //Log.d("Path",routePath.toString());
+        return true;
+    }
+
+    public void sendPath(){
+        routePath.reset();
+    }
+
+    private boolean outBound(int x, int y){
+        if(x<this.getWidth() && x>0 && y>0 && y<this.getHeight())return false;
         return true;
     }
 }

@@ -3,6 +3,7 @@ package edu.sjtu.chao.smartcart;
 import android.app.Activity;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -12,21 +13,44 @@ import android.view.View;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.ViewFlipper;
+
+import com.iflytek.cloud.ErrorCode;
+import com.iflytek.cloud.InitListener;
+import com.iflytek.cloud.RecognizerResult;
+import com.iflytek.cloud.SpeechConstant;
+import com.iflytek.cloud.SpeechError;
+import com.iflytek.cloud.SpeechUtility;
+import com.iflytek.cloud.ui.RecognizerDialog;
+import com.iflytek.cloud.ui.RecognizerDialogListener;
+
+//import com.iflytek.cloud.RecognizerListener;
+
 
 public class MainActivity extends Activity implements View.OnTouchListener {
 
     private ViewFlipper viewFlipper;
     private Button IPconfirm, bgNextButton;
-    private ImageView base, stick, background, directionKey;
+    private ImageView base, stick, background, directionKey, voiceButton;
     private SurfaceView surfaceView;
     private SurfaceHolder surfaceHolder;
     private RouteView routePad;
+    private TextView voiceText;
+    private String voiceContext;
+
+    private RecognizerDialogListener voiceDialogListener;
+    //private com.iflytek.cloud.SpeechRecognizer voiceRecognizer;
+
+    /**本地语音服务*/
+    private InitListener mInitListener;
+    private RecognizerDialog voiceDialog;
 
     private int bgRotate[]={R.drawable.bg0, R.drawable.bg1, R.drawable.bg2, R.drawable.bg3, R.drawable.bg4,
-            R.drawable.bg5, R.drawable.bg6, R.drawable.bg7, R.drawable.bg8, R.drawable.bg9};
+            R.drawable.bg5, R.drawable.bg6, R.drawable.bg7, R.drawable.bg8, R.drawable.bg9, R.drawable.bg10,
+            R.drawable.bg11,R.drawable.bg12};
     private int bgChoose=0;
-    private int bgNumber=10;
+    private int bgNumber=13;
 
     // 左右滑动时手指按下的X坐标
     private float touchDownX;
@@ -34,12 +58,14 @@ public class MainActivity extends Activity implements View.OnTouchListener {
     private float touchUpX;
 
     private View.OnTouchListener stickMotion, keyTouch;
-    private View.OnClickListener ipconfirmClick, bgNextClick;
+    private View.OnClickListener ipconfirmClick, bgNextClick, voiceControlClick;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        SpeechUtility.createUtility(MainActivity.this, SpeechConstant.APPID + "=562c4ad2");
 
         surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
         surfaceHolder = surfaceView.getHolder();
@@ -56,6 +82,27 @@ public class MainActivity extends Activity implements View.OnTouchListener {
 
         routePad = (RouteView) findViewById(R.id.routePad);
         routePad.setZOrderOnTop(true);
+
+        voiceButton = (ImageView) findViewById(R.id.voiceButton);
+        voiceText = (TextView) findViewById(R.id.voiceText);
+        voiceContext = "";
+
+        mInitListener = new InitListener() {
+            @Override
+            public void onInit(int code) {
+                Log.d("mInitLisener", "SpeechRecognizer init() code = " + code);
+                if (code != ErrorCode.SUCCESS) {
+                    Log.e("Error","初始化失败,错误码："+code);
+                }
+            }
+        };
+
+        voiceDialog = new RecognizerDialog(this, mInitListener);
+        voiceDialog.setParameter(SpeechConstant.DOMAIN,"iat");
+        voiceDialog.setParameter(SpeechConstant.LANGUAGE, "zh_cn");
+        voiceDialog.setParameter(SpeechConstant.ACCENT, "mandarin");
+        voiceDialog.setParameter(SpeechConstant.ENGINE_TYPE, SpeechConstant.TYPE_CLOUD);
+
 
         ipconfirmClick = new View.OnClickListener() {
             @Override
@@ -185,11 +232,43 @@ public class MainActivity extends Activity implements View.OnTouchListener {
             }
         };
 
+        voiceDialogListener = new RecognizerDialogListener() {
+            @Override
+            public void onResult(RecognizerResult recognizerResult, boolean isLast) {
+                //将解析后的字符串连在一起
+                JsonParser json = new JsonParser();
+                voiceContext+=json.parseIatResult(recognizerResult.getResultString());
+                if(isLast==true)
+                {
+                    voiceText.setText(voiceContext.substring(0,voiceContext.length()-1));
+                    voiceContext="";
+                }
+                Log.d("result",recognizerResult.getResultString());
+                Log.d("describe", String.valueOf(recognizerResult.describeContents()));
+            }
+
+            @Override
+            public void onError(SpeechError speechError) {
+
+            }
+        };
+
+
+        voiceControlClick = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                voiceDialog.setListener(voiceDialogListener);
+                voiceDialog.show();
+            }
+        };
+
         viewFlipper.setOnTouchListener(this);
         IPconfirm.setOnClickListener(ipconfirmClick);
         stick.setOnTouchListener(stickMotion);
         bgNextButton.setOnClickListener(bgNextClick);
         directionKey.setOnTouchListener(keyTouch);
+        voiceButton.setOnClickListener(voiceControlClick);
+        //voiceRecognizer.startListening(voiceListener);
     }
 
     @Override
